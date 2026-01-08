@@ -1,0 +1,310 @@
+{
+  "result": 0,
+  "timestamp": "2026-01-08T02:10:49.959Z",
+  "meta": {
+    "source": "lolmqq (China)",
+    "language": "pt-BR"
+  },
+  "data": {
+    "Mid": {
+      "Diamante+": [
+        {
+          "heroId": 10001,
+          "heroName": "Garen",
+          "pickRate": 0.25,
+          "winRate": 0.52,
+          "banRate": 0.03,
+          "appearRate": 0.27,
+          "rankCount": 15000,
+          "tier": "S"
+        },
+        {
+          "heroId": 10037,
+          "heroName": "Yasuo",
+          "pickRate": 0.35,
+          "winRate": 0.51,
+          "banRate": 0.15,
+          "appearRate": 0.45,
+          "rankCount": 20000,
+          "tier": "A"
+        }
+      ],
+      "Mestre+": [
+        {
+          "heroId": 10001,
+          "heroName": "Garen",
+          "pickRate": 0.22,
+          "winRate": 0.53,
+          "banRate": 0.025,
+          "appearRate": 0.24,
+          "rankCount": 8000,
+          "tier": "S"
+        }
+      ],
+      "Desafiante": [
+        {
+          "heroId": 10039,
+          "heroName": "Zed",
+          "pickRate": 0.4,
+          "winRate": 0.54,
+          "banRate": 0.2,
+          "appearRate": 0.55,
+          "rankCount": 5000,
+          "tier": "S"
+        }
+      ],
+      "Topo do Servidor": [
+        {
+          "heroId": 10038,
+          "heroName": "Ahri",
+          "pickRate": 0.38,
+          "winRate": 0.525,
+          "banRate": 0.18,
+          "appearRate": 0.5,
+          "rankCount": 3000,
+          "tier": "S"
+        }
+      ]
+    },
+    "Top": {
+      "Diamante+": [
+        {
+          "heroId": 10002,
+          "heroName": "Aatrox",
+          "pickRate": 0.28,
+          "winRate": 0.51,
+          "banRate": 0.05,
+          "appearRate": 0.3,
+          "rankCount": 12000,
+          "tier": "A"
+        },
+        {
+          "heroId": 10032,
+          "heroName": "Fiora",
+          "pickRate": 0.26,
+          "winRate": 0.53,
+          "banRate": 0.04,
+          "appearRate": 0.28,
+          "rankCount": 11000,
+          "tier": "S"
+        }
+      ],
+      "Mestre+": [
+        {
+          "heroId": 10071,
+          "heroName": "Darius",
+          "pickRate": 0.32,
+          "winRate": 0.52,
+          "banRate": 0.08,
+          "appearRate": 0.35,
+          "rankCount": 9000,
+          "tier": "S"
+        }
+      ],
+      "Desafiante": [
+        {
+          "heroId": 10002,
+          "heroName": "Aatrox",
+          "pickRate": 0.29,
+          "winRate": 0.515,
+          "banRate": 0.06,
+          "appearRate": 0.31,
+          "rankCount": 4500,
+          "tier": "A"
+        }
+      ],
+      "Topo do Servidor": [
+        {
+          "heroId": 10055,
+          "heroName": "Camille",
+          "pickRate": 0.3,
+          "winRate": 0.54,
+          "banRate": 0.07,
+          "appearRate": 0.33,
+          "rankCount": 2500,
+          "tier": "S"
+        }
+      ]
+    },
+    "Bot": {
+      "Diamante+": [
+        {
+          "heroId": 10018,
+          "heroName": "Jinx",
+          "pickRate": 0.32,
+          "winRate": 0.5,
+          "banRate": 0.12,
+          "appearRate": 0.4,
+          "rankCount": 18000,
+          "tier": "A"
+        },
+        {
+          "heroId": 10022,
+          "heroName": "Jhin",
+          "pickRate": 0.29,
+          "winRate": 0.515,
+          "banRate": 0.09,
+          "appearRate": 0.35,
+          "rankCount": 16000,
+          "tier": "S"
+        }
+      ],
+      "Mestre+": [
+        {
+          "heroId": 10026,
+          "heroName": "Kai'Sa",
+          "pickRate": 0.35,
+          "winRate": 0.52,
+          "banRate": 0.14,
+          "appearRate": 0.42,
+          "rankCount": 10000,
+          "tier": "S"
+        }
+      ],
+      "Desafiante": [
+        {
+          "heroId": 10042,
+          "heroName": "Lucian",
+          "pickRate": 0.31,
+          "winRate": 0.51,
+          "banRate": 0.1,
+          "appearRate": 0.38,
+          "rankCount": 6000,
+          "tier": "A"
+        }
+      ],
+      "Topo do Servidor": [
+        {
+          "heroId": 10098,
+          "heroName": "Ezreal",
+          "pickRate": 0.4,
+          "winRate": 0.53,
+          "banRate": 0.15,
+          "appearRate": 0.5,
+          "rankCount": 3500,
+          "tier": "S"
+        }
+      ]
+    },
+    "Support": {
+      "Diamante+": [
+        {
+          "heroId": 10021,
+          "heroName": "Braum",
+          "pickRate": 0.24,
+          "winRate": 0.51,
+          "banRate": 0.06,
+          "appearRate": 0.28,
+          "rankCount": 14000,
+          "tier": "A"
+        },
+        {
+          "heroId": 10130,
+          "heroName": "Thresh",
+          "pickRate": 0.28,
+          "winRate": 0.52,
+          "banRate": 0.1,
+          "appearRate": 0.34,
+          "rankCount": 15000,
+          "tier": "S"
+        }
+      ],
+      "Mestre+": [
+        {
+          "heroId": 10044,
+          "heroName": "Leona",
+          "pickRate": 0.26,
+          "winRate": 0.515,
+          "banRate": 0.07,
+          "appearRate": 0.3,
+          "rankCount": 8500,
+          "tier": "S"
+        }
+      ],
+      "Desafiante": [
+        {
+          "heroId": 10021,
+          "heroName": "Braum",
+          "pickRate": 0.25,
+          "winRate": 0.51,
+          "banRate": 0.065,
+          "appearRate": 0.29,
+          "rankCount": 4800,
+          "tier": "A"
+        }
+      ],
+      "Topo do Servidor": [
+        {
+          "heroId": 10124,
+          "heroName": "Pyke",
+          "pickRate": 0.32,
+          "winRate": 0.525,
+          "banRate": 0.11,
+          "appearRate": 0.39,
+          "rankCount": 2800,
+          "tier": "S"
+        }
+      ]
+    },
+    "Jungle": {
+      "Diamante+": [
+        {
+          "heroId": 10059,
+          "heroName": "Lee Sin",
+          "pickRate": 0.3,
+          "winRate": 0.505,
+          "banRate": 0.08,
+          "appearRate": 0.35,
+          "rankCount": 17000,
+          "tier": "A"
+        },
+        {
+          "heroId": 10017,
+          "heroName": "Kha'Zix",
+          "pickRate": 0.33,
+          "winRate": 0.52,
+          "banRate": 0.12,
+          "appearRate": 0.4,
+          "rankCount": 19000,
+          "tier": "S"
+        }
+      ],
+      "Mestre+": [
+        {
+          "heroId": 10005,
+          "heroName": "Kayn",
+          "pickRate": 0.34,
+          "winRate": 0.515,
+          "banRate": 0.11,
+          "appearRate": 0.41,
+          "rankCount": 11000,
+          "tier": "S"
+        }
+      ],
+      "Desafiante": [
+        {
+          "heroId": 10059,
+          "heroName": "Lee Sin",
+          "pickRate": 0.31,
+          "winRate": 0.51,
+          "banRate": 0.09,
+          "appearRate": 0.37,
+          "rankCount": 5500,
+          "tier": "A"
+        }
+      ],
+      "Topo do Servidor": [
+        {
+          "heroId": 10072,
+          "heroName": "Graves",
+          "pickRate": 0.35,
+          "winRate": 0.53,
+          "banRate": 0.13,
+          "appearRate": 0.43,
+          "rankCount": 3200,
+          "tier": "S"
+        }
+      ]
+    }
+  }
+}

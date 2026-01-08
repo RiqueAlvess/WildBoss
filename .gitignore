@@ -6,6 +6,4 @@ node_modules/
 # Arquivos gerados pelo scraping
 Scraping/lolmqq/rank_data_raw.json
 Scraping/lolmqq/rank_data_processed.json
-Scraping/lolmqq/rank_data_raw_example.json
-Scraping/lolmqq/rank_data_processed_example.json
 Scraping/lolmqq/test.js

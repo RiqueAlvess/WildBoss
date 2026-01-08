@@ -1,0 +1,280 @@
+{
+    "result": 0,
+    "data": {
+        "0": {
+            "1": [
+                {
+                    "heroId": 10001,
+                    "pickRate": 2500,
+                    "winRate": 5200,
+                    "banRate": 300,
+                    "appearRate": 2700,
+                    "rankCount": 15000,
+                    "tier": 1
+                },
+                {
+                    "heroId": 10037,
+                    "pickRate": 3500,
+                    "winRate": 5100,
+                    "banRate": 1500,
+                    "appearRate": 4500,
+                    "rankCount": 20000,
+                    "tier": 2
+                }
+            ],
+            "2": [
+                {
+                    "heroId": 10001,
+                    "pickRate": 2200,
+                    "winRate": 5300,
+                    "banRate": 250,
+                    "appearRate": 2400,
+                    "rankCount": 8000,
+                    "tier": 1
+                }
+            ],
+            "3": [
+                {
+                    "heroId": 10039,
+                    "pickRate": 4000,
+                    "winRate": 5400,
+                    "banRate": 2000,
+                    "appearRate": 5500,
+                    "rankCount": 5000,
+                    "tier": 1
+                }
+            ],
+            "4": [
+                {
+                    "heroId": 10038,
+                    "pickRate": 3800,
+                    "winRate": 5250,
+                    "banRate": 1800,
+                    "appearRate": 5000,
+                    "rankCount": 3000,
+                    "tier": 1
+                }
+            ]
+        },
+        "1": {
+            "1": [
+                {
+                    "heroId": 10002,
+                    "pickRate": 2800,
+                    "winRate": 5100,
+                    "banRate": 500,
+                    "appearRate": 3000,
+                    "rankCount": 12000,
+                    "tier": 2
+                },
+                {
+                    "heroId": 10032,
+                    "pickRate": 2600,
+                    "winRate": 5300,
+                    "banRate": 400,
+                    "appearRate": 2800,
+                    "rankCount": 11000,
+                    "tier": 1
+                }
+            ],
+            "2": [
+                {
+                    "heroId": 10071,
+                    "pickRate": 3200,
+                    "winRate": 5200,
+                    "banRate": 800,
+                    "appearRate": 3500,
+                    "rankCount": 9000,
+                    "tier": 1
+                }
+            ],
+            "3": [
+                {
+                    "heroId": 10002,
+                    "pickRate": 2900,
+                    "winRate": 5150,
+                    "banRate": 600,
+                    "appearRate": 3100,
+                    "rankCount": 4500,
+                    "tier": 2
+                }
+            ],
+            "4": [
+                {
+                    "heroId": 10055,
+                    "pickRate": 3000,
+                    "winRate": 5400,
+                    "banRate": 700,
+                    "appearRate": 3300,
+                    "rankCount": 2500,
+                    "tier": 1
+                }
+            ]
+        },
+        "2": {
+            "1": [
+                {
+                    "heroId": 10018,
+                    "pickRate": 3200,
+                    "winRate": 5000,
+                    "banRate": 1200,
+                    "appearRate": 4000,
+                    "rankCount": 18000,
+                    "tier": 2
+                },
+                {
+                    "heroId": 10022,
+                    "pickRate": 2900,
+                    "winRate": 5150,
+                    "banRate": 900,
+                    "appearRate": 3500,
+                    "rankCount": 16000,
+                    "tier": 1
+                }
+            ],
+            "2": [
+                {
+                    "heroId": 10026,
+                    "pickRate": 3500,
+                    "winRate": 5200,
+                    "banRate": 1400,
+                    "appearRate": 4200,
+                    "rankCount": 10000,
+                    "tier": 1
+                }
+            ],
+            "3": [
+                {
+                    "heroId": 10042,
+                    "pickRate": 3100,
+                    "winRate": 5100,
+                    "banRate": 1000,
+                    "appearRate": 3800,
+                    "rankCount": 6000,
+                    "tier": 2
+                }
+            ],
+            "4": [
+                {
+                    "heroId": 10098,
+                    "pickRate": 4000,
+                    "winRate": 5300,
+                    "banRate": 1500,
+                    "appearRate": 5000,
+                    "rankCount": 3500,
+                    "tier": 1
+                }
+            ]
+        },
+        "3": {
+            "1": [
+                {
+                    "heroId": 10021,
+                    "pickRate": 2400,
+                    "winRate": 5100,
+                    "banRate": 600,
+                    "appearRate": 2800,
+                    "rankCount": 14000,
+                    "tier": 2
+                },
+                {
+                    "heroId": 10130,
+                    "pickRate": 2800,
+                    "winRate": 5200,
+                    "banRate": 1000,
+                    "appearRate": 3400,
+                    "rankCount": 15000,
+                    "tier": 1
+                }
+            ],
+            "2": [
+                {
+                    "heroId": 10044,
+                    "pickRate": 2600,
+                    "winRate": 5150,
+                    "banRate": 700,
+                    "appearRate": 3000,
+                    "rankCount": 8500,
+                    "tier": 1
+                }
+            ],
+            "3": [
+                {
+                    "heroId": 10021,
+                    "pickRate": 2500,
+                    "winRate": 5100,
+                    "banRate": 650,
+                    "appearRate": 2900,
+                    "rankCount": 4800,
+                    "tier": 2
+                }
+            ],
+            "4": [
+                {
+                    "heroId": 10124,
+                    "pickRate": 3200,
+                    "winRate": 5250,
+                    "banRate": 1100,
+                    "appearRate": 3900,
+                    "rankCount": 2800,
+                    "tier": 1
+                }
+            ]
+        },
+        "4": {
+            "1": [
+                {
+                    "heroId": 10059,
+                    "pickRate": 3000,
+                    "winRate": 5050,
+                    "banRate": 800,
+                    "appearRate": 3500,
+                    "rankCount": 17000,
+                    "tier": 2
+                },
+                {
+                    "heroId": 10017,
+                    "pickRate": 3300,
+                    "winRate": 5200,
+                    "banRate": 1200,
+                    "appearRate": 4000,
+                    "rankCount": 19000,
+                    "tier": 1
+                }
+            ],
+            "2": [
+                {
+                    "heroId": 10005,
+                    "pickRate": 3400,
+                    "winRate": 5150,
+                    "banRate": 1100,
+                    "appearRate": 4100,
+                    "rankCount": 11000,
+                    "tier": 1
+                }
+            ],
+            "3": [
+                {
+                    "heroId": 10059,
+                    "pickRate": 3100,
+                    "winRate": 5100,
+                    "banRate": 900,
+                    "appearRate": 3700,
+                    "rankCount": 5500,
+                    "tier": 2
+                }
+            ],
+            "4": [
+                {
+                    "heroId": 10072,
+                    "pickRate": 3500,
+                    "winRate": 5300,
+                    "banRate": 1300,
+                    "appearRate": 4300,
+                    "rankCount": 3200,
+                    "tier": 1
+                }
+            ]
+        }
+    }
+}
