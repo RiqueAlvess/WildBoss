@@ -1,87 +1,54 @@
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Processa os dados brutos da API lolmqq e aplica traduções
- *
- * Estrutura de entrada:
- * {
- *   "result": 0,
- *   "data": {
- *     "0": { "1": [...], "2": [...], "3": [...], "4": [...] },  // Role index
- *     "1": { ... },
- *     ...
- *   }
- * }
- *
- * Estrutura de saída:
- * {
- *   "result": 0,
- *   "timestamp": "2026-01-08T...",
- *   "data": {
- *     "Mid": {
- *       "Diamante+": [...champions...],
- *       "Mestre+": [...champions...],
- *       ...
- *     },
- *     "Top": { ... },
- *     ...
- *   }
- * }
- */
-
 class ChampionDataProcessor {
     constructor() {
-        // Carrega as traduções
         const translationsPath = path.join(__dirname, 'translations.json');
         this.translations = JSON.parse(fs.readFileSync(translationsPath, 'utf-8'));
     }
 
     /**
-     * Processa um campeão individual, aplicando traduções
+     * Processa um campeão individual, suportando snake_case da API e camelCase
      */
     processChampion(champion) {
-        const heroId = champion.heroId?.toString();
+        // A API usa hero_id. Tentamos ambos para garantir compatibilidade.
+        const rawId = champion.hero_id || champion.heroId;
+        const heroId = rawId?.toString();
         const heroName = this.translations.heroes[heroId] || `Hero_${heroId}`;
 
         return {
-            heroId: champion.heroId,
+            heroId: rawId ? parseInt(rawId) : null,
             heroName: heroName,
-            pickRate: this.parseRate(champion.pickRate),
-            winRate: this.parseRate(champion.winRate),
-            banRate: this.parseRate(champion.banRate),
-            appearRate: this.parseRate(champion.appearRate),
-            rankCount: champion.rankCount || 0,
-            tier: this.getTierLabel(champion.tier)
+            // Mapeamento das taxas suportando o padrão snake_case da API
+            pickRate: this.parseRate(champion.pick_rate || champion.pickRate),
+            winRate: this.parseRate(champion.win_rate || champion.winRate),
+            banRate: this.parseRate(champion.forbid_rate || champion.ban_rate || champion.banRate),
+            appearRate: this.parseRate(champion.appear_rate || champion.appearRate),
+            rankCount: champion.rank_count || champion.rankCount || 0,
+            tier: this.getTierLabel(champion.t_level || champion.tier)
         };
     }
 
     /**
-     * Converte taxa de porcentagem (ex: 2500 -> 0.25 ou "25%" -> 0.25)
+     * Converte taxa de porcentagem (ex: 2500 -> 0.25)
      */
     parseRate(rate) {
         if (rate === undefined || rate === null) return 0;
+        
+        const numRate = parseFloat(rate);
+        if (isNaN(numRate)) return 0;
 
-        // Se já for decimal (0-1)
-        if (rate >= 0 && rate <= 1) return parseFloat(rate.toFixed(4));
-
-        // Se for porcentagem inteira (0-10000)
-        if (rate > 1) return parseFloat((rate / 10000).toFixed(4));
-
-        return 0;
+        // Se for um valor inteiro grande (ex: 5000 para 50%), divide por 10000
+        if (numRate > 1) return parseFloat((numRate / 10000).toFixed(4));
+        
+        return parseFloat(numRate.toFixed(4));
     }
 
-    /**
-     * Retorna o label do tier (S, A, B, C, D)
-     */
     getTierLabel(tier) {
         if (!tier) return null;
         return this.translations.tiers[tier.toString()] || null;
     }
 
-    /**
-     * Processa os dados brutos e retorna JSON tratado
-     */
     processRawData(rawData) {
         if (!rawData || rawData.result !== 0) {
             throw new Error('Dados inválidos ou erro na resposta da API');
@@ -97,37 +64,31 @@ class ChampionDataProcessor {
             data: {}
         };
 
-        // Itera sobre cada role (0-4)
         for (const roleIndex in rawData.data) {
             const roleData = rawData.data[roleIndex];
-            const roleName = this.translations.routes[(parseInt(roleIndex) + 1).toString()];
+            // As chaves no JSON de tradução para rotas são "1" a "5"
+            const routeKey = (parseInt(roleIndex) + 1).toString();
+            const roleName = this.translations.routes[routeKey];
 
             if (!roleName) {
-                console.warn(`⚠️  Role index ${roleIndex} não encontrada no dicionário`);
                 continue;
             }
 
             processedData.data[roleName] = {};
 
-            // Itera sobre cada dan/divisão (1-4)
             for (const danIndex in roleData) {
                 const danData = roleData[danIndex];
                 const danInfo = this.translations.dans[danIndex];
 
-                if (!danInfo) {
-                    console.warn(`⚠️  Dan index ${danIndex} não encontrado no dicionário`);
-                    continue;
-                }
+                if (!danInfo) continue;
 
                 const danLabel = danInfo.label_ptbr;
 
-                // Processa cada campeão no array
                 if (Array.isArray(danData)) {
                     processedData.data[roleName][danLabel] = danData.map(champion =>
                         this.processChampion(champion)
                     );
                 } else {
-                    console.warn(`⚠️  Dados esperados como array em ${roleName}/${danLabel}`);
                     processedData.data[roleName][danLabel] = [];
                 }
             }
@@ -136,9 +97,6 @@ class ChampionDataProcessor {
         return processedData;
     }
 
-    /**
-     * Processa arquivo bruto e salva resultado
-     */
     processFile(inputPath, outputPath) {
         try {
             console.log('📖 Lendo arquivo bruto...');
@@ -150,14 +108,9 @@ class ChampionDataProcessor {
             console.log('💾 Salvando dados processados...');
             fs.writeFileSync(outputPath, JSON.stringify(processedData, null, 2), 'utf-8');
 
-            // Estatísticas
             const stats = this.getProcessingStats(processedData);
             console.log('\n✅ Processamento concluído!');
-            console.log('📊 Estatísticas:');
-            console.log(`   - Roles processadas: ${stats.roles}`);
-            console.log(`   - Divisões por role: ${stats.divisionsPerRole}`);
-            console.log(`   - Total de campeões: ${stats.totalChampions}`);
-            console.log(`\n📁 Arquivo salvo: ${outputPath}`);
+            console.log(`📊 Total de campeões: ${stats.totalChampions}`);
 
             return processedData;
         } catch (error) {
@@ -166,9 +119,6 @@ class ChampionDataProcessor {
         }
     }
 
-    /**
-     * Retorna estatísticas do processamento
-     */
     getProcessingStats(processedData) {
         const roles = Object.keys(processedData.data);
         let totalChampions = 0;
@@ -185,11 +135,7 @@ class ChampionDataProcessor {
             }
         }
 
-        return {
-            roles: roles.length,
-            divisionsPerRole,
-            totalChampions
-        };
+        return { roles: roles.length, divisionsPerRole, totalChampions };
     }
 }
 
