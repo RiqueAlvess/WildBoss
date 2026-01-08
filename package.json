@@ -1,0 +1,14 @@
+{
+  "name": "wildboss",
+  "version": "2.0.0",
+  "description": "Modular WildRift Fire scraper",
+  "scripts": {
+    "crawl": "node scripts/crawl-guides.js",
+    "scrape:champions": "node scripts/scrape-champions.js",
+    "scrape:items": "node scripts/scrape-items.js",
+    "scrape:runes": "node scripts/scrape-runes.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}
