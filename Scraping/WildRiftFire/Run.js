@@ -1,33 +1,40 @@
 const { firefox } = require('playwright');
 const fs = require('fs');
 
-function slugFromUrl(u) {
+const slugFromUrl = (url) => {
     try {
-        const p = new URL(u).pathname.split('/').filter(Boolean);
-        return p[p.length - 1] || 'champion';
-    } catch {
-        return 'champion';
+        const parts = new URL(url).pathname.split('/').filter(Boolean);
+        return parts[parts.length - 1] || 'champion';
+    } catch { return 'champion'; }
+};
+
+const dismissBanners = async (page) => {
+    const selectors = ['button:has-text("Accept")', 'button:has-text("I agree")', '[aria-label="dismiss"]'];
+    for (const sel of selectors) {
+        await page.locator(sel).first().click({ timeout: 1000 }).catch(() => {});
     }
-}
+};
 
-async function fastExtractAll(page) {
-    return await page.evaluate(() => {
-        const statsSection = document.querySelector('.wf-champion__about__stats');
-        if (statsSection) {
-            statsSection.style.setProperty('display', 'block', 'important');
-            statsSection.style.setProperty('visibility', 'visible', 'important');
+const ensureStatsVisible = async (page) => {
+    await dismissBanners(page);
+    await page.locator('.show-champ-stats').first().click({ timeout: 2000 }).catch(() => {});
+
+    await page.evaluate(() => {
+        const stats = document.querySelector('.wf-champion__about__stats');
+        if (stats) {
+            stats.style.setProperty('display', 'block', 'important');
+            stats.style.setProperty('visibility', 'visible', 'important');
         }
+    });
 
-        const result = {
-            statsByLevel: [],
-            abilities: [],
-            builds: [],
-            runesAndSpells: [],
-            situationalItems: [],
-            skillOrders: []
-        };
+    await page.waitForSelector('#range', { timeout: 3000 }).catch(() => {});
+};
 
-        // Extract abilities
+const extractAllData = async (page) => {
+    return await page.evaluate(() => {
+        const result = { statsByLevel: [], abilities: [], builds: [], runesAndSpells: [], situationalItems: [], skillOrders: [] };
+
+        // Abilities
         document.querySelectorAll('.statsBlock.abilities .statsBlock__block').forEach(block => {
             const nameWrap = block.querySelector('.upper .info .name');
             let key = null, name = null;
@@ -35,25 +42,25 @@ async function fastExtractAll(page) {
             if (nameWrap) {
                 const span = nameWrap.querySelector('span');
                 if (span) key = span.textContent.trim();
-                const cloned = nameWrap.cloneNode(true);
-                const spanInClone = cloned.querySelector('span');
-                if (spanInClone) spanInClone.remove();
-                name = cloned.textContent.replace(/\s+/g, ' ').trim();
+                const clone = nameWrap.cloneNode(true);
+                clone.querySelector('span')?.remove();
+                name = clone.textContent.replace(/\s+/g, ' ').trim();
             }
 
             const cooldown = Array.from(block.querySelectorAll('.upper .info .cooldown span')).map(s => s.textContent.trim());
             const cost = Array.from(block.querySelectorAll('.upper .info .cost span')).map(s => s.textContent.trim());
             const lower = block.querySelector('.lower');
-            const descriptionHtml = lower ? lower.innerHTML.trim() : null;
-            const descriptionText = lower ? lower.textContent.replace(/\s+/g, ' ').trim() : null;
-            const iconEl = block.querySelector('.upper img');
-            const icon = iconEl ? iconEl.getAttribute('src') : null;
+            const icon = block.querySelector('.upper img')?.getAttribute('src');
 
-            result.abilities.push({ key, name, cooldown, cost, icon, descriptionHtml, descriptionText });
+            result.abilities.push({
+                key, name, cooldown, cost, icon,
+                descriptionHtml: lower?.innerHTML.trim(),
+                descriptionText: lower?.textContent.replace(/\s+/g, ' ').trim()
+            });
         });
 
-        // Extract stats for all levels
-        const extractStatsForLevel = (level) => {
+        // Stats by level
+        const extractStats = (level) => {
             const input = document.querySelector('#range');
             if (input) {
                 input.value = String(level);
@@ -61,17 +68,13 @@ async function fastExtractAll(page) {
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
-            const rawStats = {};
-            const stats = {};
+            const rawStats = {}, stats = {};
             document.querySelectorAll('.statsBlock.champion .statsBlock__block').forEach(b => {
-                const nameEl = b.querySelector('.name');
-                const valueEl = b.querySelector('.value');
-                if (nameEl && valueEl) {
-                    const label = nameEl.textContent.replace(/\s+/g, ' ').trim();
-                    const valText = valueEl.textContent.replace(/\s+/g, ' ').trim();
+                const label = b.querySelector('.name')?.textContent.replace(/\s+/g, ' ').trim();
+                const valText = b.querySelector('.value')?.textContent.replace(/\s+/g, ' ').trim();
+                if (label && valText) {
                     rawStats[label] = valText;
-                    const clean = valText.replace(/,/g, '');
-                    const num = parseFloat(clean);
+                    const num = parseFloat(valText.replace(/,/g, ''));
                     stats[label] = Number.isNaN(num) ? valText : num;
                 }
             });
@@ -80,69 +83,58 @@ async function fastExtractAll(page) {
         };
 
         for (let level = 1; level <= 15; level++) {
-            result.statsByLevel.push(extractStatsForLevel(level));
+            result.statsByLevel.push(extractStats(level));
         }
 
-        // Extract builds
-        document.querySelectorAll('.wf-champion__data__items[data-guide-id]').forEach(block => {
-            const guideId = block.getAttribute('data-guide-id');
-            const isActive = !block.classList.contains('inactive');
+        // Builds
+        const extractItems = (block, selector) => {
+            return Array.from(block.querySelectorAll(selector)).map(item => {
+                const img = item.querySelector('img');
+                const name = item.querySelector('.name');
+                return img && name ? {
+                    name: name.textContent.trim(),
+                    image: img.getAttribute('src'),
+                    isEnchant: item.classList.contains('enchant') || !!item.querySelector('.enchant')
+                } : null;
+            }).filter(Boolean);
+        };
 
-            const extractItems = (selector) => {
+        document.querySelectorAll('.wf-champion__data__items[data-guide-id]').forEach(block => {
+            result.builds.push({
+                guideId: block.getAttribute('data-guide-id'),
+                isActive: !block.classList.contains('inactive'),
+                starting: extractItems(block, '.section.starting .ico-holder'),
+                core: extractItems(block, '.section.core .ico-holder'),
+                boots: extractItems(block, '.section.boots .ico-holder'),
+                final: extractItems(block, '.section.final .ico-holder')
+            });
+        });
+
+        // Runes and Spells
+        document.querySelectorAll('.wf-champion__data__spells[data-guide-id]').forEach(block => {
+            const extractTooltip = (selector, extraCheck = {}) => {
                 return Array.from(block.querySelectorAll(selector)).map(item => {
                     const img = item.querySelector('img');
                     const name = item.querySelector('.name');
                     return img && name ? {
                         name: name.textContent.trim(),
                         image: img.getAttribute('src'),
-                        isEnchant: item.classList.contains('enchant') || item.querySelector('.enchant') !== null
+                        ...extraCheck(img)
                     } : null;
                 }).filter(Boolean);
             };
 
-            result.builds.push({
-                guideId,
-                isActive,
-                starting: extractItems('.section.starting .ico-holder'),
-                core: extractItems('.section.core .ico-holder'),
-                boots: extractItems('.section.boots .ico-holder'),
-                final: extractItems('.section.final .ico-holder')
+            result.runesAndSpells.push({
+                guideId: block.getAttribute('data-guide-id'),
+                isActive: !block.classList.contains('inactive'),
+                summonerSpells: extractTooltip('.section.spells .ico-holder', () => ({})),
+                runes: extractTooltip('.section.runes .ico-holder', (img) => ({ isKeystone: img.classList.contains('keystone') }))
             });
         });
 
-        // Extract runes and spells
-        document.querySelectorAll('.wf-champion__data__spells[data-guide-id]').forEach(block => {
-            const guideId = block.getAttribute('data-guide-id');
-            const isActive = !block.classList.contains('inactive');
-
-            const summonerSpells = Array.from(block.querySelectorAll('.section.spells .ico-holder')).map(item => {
-                const img = item.querySelector('img');
-                const name = item.querySelector('.name');
-                return img && name ? {
-                    name: name.textContent.trim(),
-                    image: img.getAttribute('src')
-                } : null;
-            }).filter(Boolean);
-
-            const runes = Array.from(block.querySelectorAll('.section.runes .ico-holder')).map(item => {
-                const img = item.querySelector('img');
-                const name = item.querySelector('.name');
-                return img && name ? {
-                    name: name.textContent.trim(),
-                    image: img.getAttribute('src'),
-                    isKeystone: img.classList.contains('keystone')
-                } : null;
-            }).filter(Boolean);
-
-            result.runesAndSpells.push({ guideId, isActive, summonerSpells, runes });
-        });
-
-        // Extract situational items
+        // Situational Items
         document.querySelectorAll('.wf-champion__data__situational[data-guide-id]').forEach(block => {
-            const guideId = block.getAttribute('data-guide-id');
-            const isActive = !block.classList.contains('inactive');
             const situations = [];
-
             block.querySelectorAll('.section.situation').forEach(section => {
                 const situationEl = section.querySelector('.situation[name="situation"]');
                 if (!situationEl) return;
@@ -150,88 +142,43 @@ async function fastExtractAll(page) {
                 const items = Array.from(section.querySelectorAll('.ico-holder')).map(item => {
                     const img = item.querySelector('img');
                     const name = item.querySelector('.name');
-                    return img && name ? {
-                        name: name.textContent.trim(),
-                        image: img.getAttribute('src')
-                    } : null;
+                    return img && name ? { name: name.textContent.trim(), image: img.getAttribute('src') } : null;
                 }).filter(Boolean);
 
-                if (items.length > 0) {
-                    situations.push({
-                        situation: situationEl.textContent.trim(),
-                        items
-                    });
+                if (items.length) situations.push({ situation: situationEl.textContent.trim(), items });
+            });
+
+            result.situationalItems.push({ guideId: block.getAttribute('data-guide-id'), isActive: !block.classList.contains('inactive'), situations });
+        });
+
+        // Skill Orders
+        document.querySelectorAll('.wf-champion__data__skills[data-guide-id]').forEach(block => {
+            const abilities = [];
+            block.querySelectorAll('.skills-mod__abilities__row:not(.skills-mod__abilities__row--passive)').forEach(row => {
+                const abilityName = row.querySelector('span')?.textContent.trim();
+                if (abilityName) {
+                    const levels = Array.from(row.querySelectorAll('li.lit')).map(li => {
+                        const level = li.getAttribute('level');
+                        return level ? parseInt(level) : null;
+                    }).filter(Boolean);
+                    abilities.push({ name: abilityName, levels });
                 }
             });
 
-            result.situationalItems.push({ guideId, isActive, situations });
-        });
+            const quickOrder = Array.from(block.querySelectorAll('.skills-mod__quick__order .ico-holder img'))
+                .map(img => ({ image: img.getAttribute('src'), alt: img.getAttribute('alt') }));
 
-        // Extract skill orders
-        document.querySelectorAll('.wf-champion__data__skills[data-guide-id]').forEach(block => {
-            const guideId = block.getAttribute('data-guide-id');
-            const isActive = !block.classList.contains('inactive');
-            const abilities = [];
-
-            block.querySelectorAll('.skills-mod__abilities__row:not(.skills-mod__abilities__row--passive)').forEach(row => {
-                const abilityName = row.querySelector('span')?.textContent.trim();
-                if (!abilityName) return;
-
-                const levels = Array.from(row.querySelectorAll('li.lit')).map(li => {
-                    const level = li.getAttribute('level');
-                    return level ? parseInt(level) : null;
-                }).filter(Boolean);
-
-                abilities.push({ name: abilityName, levels });
-            });
-
-            const quickOrder = Array.from(block.querySelectorAll('.skills-mod__quick__order .ico-holder img')).map(img => ({
-                image: img.getAttribute('src'),
-                alt: img.getAttribute('alt')
-            }));
-
-            result.skillOrders.push({ guideId, isActive, abilities, quickOrder });
+            result.skillOrders.push({ guideId: block.getAttribute('data-guide-id'), isActive: !block.classList.contains('inactive'), abilities, quickOrder });
         });
 
         return result;
     });
-}
+};
 
-async function openStatsQuick(page) {
-    // Use Playwright selectors for banner dismissal
-    const selectors = [
-        'button:has-text("Accept")',
-        'button:has-text("I agree")',
-        '[aria-label="dismiss"]'
-    ];
-
-    for (const sel of selectors) {
-        await page.locator(sel).first().click({ timeout: 1000 }).catch(() => { });
-    }
-
-    // Click show stats button
-    await page.locator('.show-champ-stats').first().click({ timeout: 2000 }).catch(() => { });
-
-    // Force show with evaluate
-    await page.evaluate(() => {
-        const statsSection = document.querySelector('.wf-champion__about__stats');
-        if (statsSection) {
-            statsSection.style.setProperty('display', 'block', 'important');
-            statsSection.style.setProperty('visibility', 'visible', 'important');
-        }
-    });
-
-    await page.waitForSelector('#range', { timeout: 3000 }).catch(() => { });
-}
-
-async function scrapeChampion(page, url) {
-    await page.goto(url, {
-        waitUntil: 'domcontentloaded',
-        timeout: 20000
-    });
-
-    await openStatsQuick(page);
-    const data = await fastExtractAll(page);
+const scrapeChampion = async (page, url) => {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await ensureStatsVisible(page);
+    const data = await extractAllData(page);
 
     return {
         champion: slugFromUrl(url),
@@ -239,19 +186,14 @@ async function scrapeChampion(page, url) {
         scrapedAt: new Date().toISOString(),
         ...data
     };
-}
+};
 
 (async () => {
     const urls = fs.readFileSync('guides.txt', 'utf8').split('\n').filter(line => line.trim());
     const startTime = Date.now();
 
-    const browser = await firefox.launch({
-        headless: process.env.HEADLESS !== '1'
-    });
-
-    const context = await browser.newContext({
-        viewport: { width: 1280, height: 900 }
-    });
+    const browser = await firefox.launch({ headless: process.env.HEADLESS !== '1' });
+    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 
     await context.route(/(googlesyndication|googleadservices|doubleclick|adservice|googletagmanager|google-analytics|adthrive|cpmstar|facebook|twitter)\.com/i,
         route => route.abort());
@@ -262,7 +204,6 @@ async function scrapeChampion(page, url) {
     for (let i = 0; i < total; i++) {
         const url = urls[i];
         const championName = slugFromUrl(url);
-
         console.log(`Processando ${i + 1}/${total}: ${championName}`);
 
         const page = await context.newPage();
@@ -274,7 +215,6 @@ async function scrapeChampion(page, url) {
 
             results.push(result);
             console.log(`Concluido ${championName} - ${duration}s`);
-
         } catch (err) {
             console.log(`Erro ${championName}: ${err.message}`);
         } finally {
@@ -286,7 +226,6 @@ async function scrapeChampion(page, url) {
     await browser.close();
 
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-
     fs.writeFileSync('all_champions.json', JSON.stringify(results, null, 2), 'utf8');
 
     console.log(`\nConcluido! ${results.length}/${total} campeões em ${totalTime}s`);
