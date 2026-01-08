@@ -1,39 +1,49 @@
-// crawl_wildriftfire_guides.js
-const fs = require("fs");
-const path = require("path");
-const { firefox } = require("playwright"); // <<< troquei para firefox
+const fs = require('fs');
+const path = require('path');
+const { firefox } = require('playwright');
 
-const START_URL = "https://www.wildriftfire.com/";
+const START_URL = 'https://www.wildriftfire.com/';
 const DOMAIN = new URL(START_URL).origin;
 const MAX_DEPTH = 2;
 const MAX_PAGES = 200;
 const NAV_TIMEOUT = 30000;
-const IDLE_WAIT = "networkidle";
 const BETWEEN_VISITS_MS = 350;
 
-function toAbsolute(href, base) {
+const toAbsolute = (href, base) => {
     try {
         const abs = new URL(href, base).toString();
-        if (!abs.startsWith(DOMAIN)) return null;
-        return abs.split("#")[0];
-    } catch {
-        return null;
-    }
-}
+        return abs.startsWith(DOMAIN) ? abs.split('#')[0] : null;
+    } catch { return null; }
+};
 
-async function extractLinks(page) {
-    return page.$$eval("a[href]", as =>
-        as.map(a => a.getAttribute("href")).filter(Boolean)
-    );
-}
+const extractLinks = async (page) => {
+    return page.$$eval('a[href]', as => as.map(a => a.getAttribute('href')).filter(Boolean));
+};
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+const autoScroll = async (page) => {
+    await page.evaluate(async () => {
+        await new Promise(resolve => {
+            let y = 0;
+            const step = () => {
+                y += Math.floor(window.innerHeight * 0.8);
+                window.scrollTo(0, y);
+                if (y < document.body.scrollHeight) {
+                    setTimeout(step, 120);
+                } else {
+                    setTimeout(resolve, 200);
+                }
+            };
+            step();
+        });
+    });
+};
 
 (async () => {
-    const browser = await firefox.launch({ headless: true }); // <<< firefox
+    const browser = await firefox.launch({ headless: true });
     const ctx = await browser.newContext({
-        userAgent:
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0",
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0'
     });
     const page = await ctx.newPage();
     page.setDefaultTimeout(NAV_TIMEOUT);
@@ -51,38 +61,21 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
         visited.add(url);
 
         try {
-            await page.goto(url, { waitUntil: IDLE_WAIT });
-            pagesVisited += 1;
+            await page.goto(url, { waitUntil: 'networkidle' });
+            pagesVisited++;
 
-            try {
-                await page.evaluate(async () => {
-                    await new Promise(resolve => {
-                        let y = 0;
-                        const step = () => {
-                            y += Math.floor(window.innerHeight * 0.8);
-                            window.scrollTo(0, y);
-                            if (y < document.body.scrollHeight) {
-                                setTimeout(step, 120);
-                            } else {
-                                setTimeout(resolve, 200);
-                            }
-                        };
-                        step();
-                    });
-                });
-            } catch { }
+            await autoScroll(page).catch(() => {});
 
-            const hrefs = (await extractLinks(page)) || [];
+            const hrefs = await extractLinks(page) || [];
             for (const href of hrefs) {
                 const abs = toAbsolute(href, url);
                 if (!abs) continue;
 
-                if (abs.includes("/guide/")) guideLinks.add(abs);
+                if (abs.includes('/guide/')) guideLinks.add(abs);
 
                 if (depth < MAX_DEPTH && !discovered.has(abs)) {
-                    const isStaticAsset =
-                        abs.match(/\.(png|jpe?g|webp|gif|svg|ico|css|js|json|xml|mp4|webm)$/i);
-                    if (!isStaticAsset) {
+                    const isStatic = abs.match(/\.(png|jpe?g|webp|gif|svg|ico|css|js|json|xml|mp4|webm)$/i);
+                    if (!isStatic) {
                         discovered.add(abs);
                         queue.push({ url: abs, depth: depth + 1 });
                     }
@@ -91,16 +84,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
             await sleep(BETWEEN_VISITS_MS);
         } catch (err) {
-            console.error(`[ERRO] ${url}:`, err.message);
+            console.error(`[ERRO] ${url}: ${err.message}`);
         }
     }
 
-    const outTxt = path.resolve(process.cwd(), "guides.txt");
-    const outJson = path.resolve(process.cwd(), "guides.json");
+    const outTxt = path.resolve(process.cwd(), 'guides.txt');
+    const outJson = path.resolve(process.cwd(), 'guides.json');
     const sorted = Array.from(guideLinks).sort();
 
-    fs.writeFileSync(outTxt, sorted.join("\n") + "\n", "utf8");
-    fs.writeFileSync(outJson, JSON.stringify(sorted, null, 2), "utf8");
+    fs.writeFileSync(outTxt, sorted.join('\n') + '\n', 'utf8');
+    fs.writeFileSync(outJson, JSON.stringify(sorted, null, 2), 'utf8');
 
     console.log(`Visitadas ${pagesVisited} páginas.`);
     console.log(`Encontrados ${sorted.length} links com "/guide/".`);
